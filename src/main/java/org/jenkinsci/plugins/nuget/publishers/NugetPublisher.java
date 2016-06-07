@@ -19,6 +19,7 @@ import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -28,7 +29,8 @@ import java.util.logging.Logger;
 public class NugetPublisher extends Recorder {
 
     private static final Logger logger = Logger.getLogger(NugetPublisher.class.getName());
-
+    private static final String PROMOTION_CLASS_NAME = "hudson.plugins.promoted_builds.Promotion";
+    
     private String name;
     private String packagesPattern;
     private String nugetPublicationName;
@@ -50,14 +52,23 @@ public class NugetPublisher extends Recorder {
     @Override
      public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
         listener.getLogger().format("Starting %s publication%n", name);
-        FilePath workspaceRoot = getWorkspace(build);
         NugetGlobalConfiguration configuration = GlobalConfiguration.all().get(NugetGlobalConfiguration.class);
         NugetPublication publication = NugetPublication.get(nugetPublicationName);
 
         String pattern = Util.replaceMacro(packagesPattern, build.getEnvironment(listener));
         String exclusionPattern = Util.replaceMacro(packagesExclusionPattern, build.getEnvironment(listener));
         NugetPublisherCallable callable = new NugetPublisherCallable(pattern, exclusionPattern, listener, configuration, publication);
-        List<PublicationResult> results = workspaceRoot.act(callable);
+        
+        FilePath filesRoot;
+        
+        if (PROMOTION_CLASS_NAME.equals(build.getClass().getCanonicalName())) {
+            filesRoot = getPromotionPath(build);
+        }
+        else{
+            filesRoot = getWorkspace(build);
+        }
+
+        List<PublicationResult> results = filesRoot.act(callable);
         if (results.size() > 0) {
             build.addAction(new NugetPublisherRunAction(name, results));
         }
@@ -77,6 +88,17 @@ public class NugetPublisher extends Recorder {
     @SuppressFBWarnings(value = "NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE", justification = "We shoud have.")
     private FilePath getWorkspace(AbstractBuild<?, ?> build) {
         return build.getWorkspace();
+    }
+    
+    private FilePath getPromotionPath(AbstractBuild<?, ?> build){
+        AbstractBuild<?, ?> promoted;
+        try {
+            final Method getTarget = build.getClass().getMethod("getTarget", (Class<?>[]) null);
+            promoted = (AbstractBuild) getTarget.invoke(build, (Object[]) null);
+        } catch (Exception e) {
+            throw new RuntimeException(Messages.exception_failedToGetPromotedBuild(), e);
+        }
+        return new FilePath(promoted.getArtifactsDir());
     }
 
     public String getName() {
