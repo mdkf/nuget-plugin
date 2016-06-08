@@ -17,6 +17,12 @@
       </j:forEach>
     </select>
   </f:entry>
+  <j:set var="inPromotion" value="true"/>
+  <j:if test="${inPromotion}">
+    <f:entry title="${%UseWorkspaceInPromotion}" field="useWorkspaceInPromotion">
+        <f:checkbox />
+    </f:entry>
+  </j:if>
   <f:entry title="${%FilePattern}" description="${%FilePatternDescription}" field="packagesPattern">
     <f:textbox value="${instance.packagesPattern}"/>
   </f:entry>

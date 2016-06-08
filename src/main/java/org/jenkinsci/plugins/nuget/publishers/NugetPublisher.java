@@ -35,13 +35,15 @@ public class NugetPublisher extends Recorder {
     private String packagesPattern;
     private String nugetPublicationName;
     private String packagesExclusionPattern;
+    private boolean useWorkspaceInPromotion;
 
     @DataBoundConstructor
-    public NugetPublisher(String name, String packagesPattern, String nugetPublicationName, String packagesExclusionPattern) {
+    public NugetPublisher(String name, String packagesPattern, String nugetPublicationName, String packagesExclusionPattern, boolean useWorkspaceInPromotion) {
         this.name = name;
         this.packagesPattern = packagesPattern;
         this.nugetPublicationName = nugetPublicationName;
         this.packagesExclusionPattern = packagesExclusionPattern;
+        this.useWorkspaceInPromotion=useWorkspaceInPromotion;
     }
 
     @Override
@@ -61,7 +63,7 @@ public class NugetPublisher extends Recorder {
         
         FilePath filesRoot;
         
-        if (PROMOTION_CLASS_NAME.equals(build.getClass().getCanonicalName())) {
+        if (PROMOTION_CLASS_NAME.equals(build.getClass().getCanonicalName())&&!useWorkspaceInPromotion) {
             filesRoot = getPromotionPath(build);
         }
         else{
@@ -116,10 +118,15 @@ public class NugetPublisher extends Recorder {
     public String getNugetPublicationName() {
         return nugetPublicationName;
     }
+    
+    public boolean getUseWorkspaceInPromotion(){
+        return useWorkspaceInPromotion;
+    }
 
     @Extension
     public static final class NugetPublisherDescriptor extends BuildStepDescriptor<Publisher> {
-
+        private static final String PROMOTION_JOB_TYPE = "hudson.plugins.promoted_builds.PromotionProcess";
+        
         public NugetPublisherDescriptor() {
             super(NugetPublisher.class);
             load();
@@ -127,7 +134,7 @@ public class NugetPublisher extends Recorder {
 
         @Override
         public boolean isApplicable(Class<? extends AbstractProject> type) {
-            return true;
+            return PROMOTION_JOB_TYPE.equals(type.getCanonicalName());
         }
 
         @Override
