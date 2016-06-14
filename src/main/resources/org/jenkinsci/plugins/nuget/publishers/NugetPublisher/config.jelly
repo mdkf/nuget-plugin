@@ -1,6 +1,15 @@
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form">
   <j:set var="nugetPublications" value="${descriptor.publications}"/>
+  <f:entry title="descriptor.class">
+        <f:textbox value="${descriptor.class}"/>
+    </f:entry>
+    <f:entry title="it.class">
+        <f:textbox value="${it.class}"/>
+    </f:entry>
+    <f:entry title="insatance.class">
+        <f:textbox value="${instance.class}"/>
+    </f:entry>
   <f:entry title="${%Name}" field="name">
     <f:textbox value="${instance.name}"/>
   </f:entry>
@@ -17,15 +26,21 @@
       </j:forEach>
     </select>
   </f:entry>
-  <j:set var="inPromotion" value="true"/>
-  <j:if test="${inPromotion}">
+  <j:choose>
+   <j:when test="${inPromotion}">
     <f:entry title="${%UseWorkspaceInPromotion}" field="useWorkspaceInPromotion">
-        <f:checkbox />
+        <f:checkbox value="${instance.useWorkspaceInPromotion}"/>
     </f:entry>
-  </j:if>
+    <f:entry title="${%FilePattern}" description="${%FilePatternDescriptionPromotion}" field="packagesPattern">
+        <f:textbox value="${instance.packagesPattern}"/>
+    </f:entry>
+  </j:when>
+   <j:otherwise>
   <f:entry title="${%FilePattern}" description="${%FilePatternDescription}" field="packagesPattern">
     <f:textbox value="${instance.packagesPattern}"/>
   </f:entry>
+  </j:otherwise>
+</j:choose>
   <f:entry title="${%FileExclusionPattern}" description="${%FileExclusionPatternDescription}" field="packagesExclusionPattern">
     <f:textbox value="${instance.packagesExclusionPattern}"/>
   </f:entry>

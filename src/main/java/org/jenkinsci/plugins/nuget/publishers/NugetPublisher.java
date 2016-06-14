@@ -45,6 +45,8 @@ public class NugetPublisher extends Recorder {
         this.packagesExclusionPattern = packagesExclusionPattern;
         this.useWorkspaceInPromotion=useWorkspaceInPromotion;
     }
+    
+    public NugetPublisher(){}
 
     @Override
     public BuildStepMonitor getRequiredMonitorService() {
@@ -61,14 +63,7 @@ public class NugetPublisher extends Recorder {
         String exclusionPattern = Util.replaceMacro(packagesExclusionPattern, build.getEnvironment(listener));
         NugetPublisherCallable callable = new NugetPublisherCallable(pattern, exclusionPattern, listener, configuration, publication);
         
-        FilePath filesRoot;
-        
-        if (PROMOTION_CLASS_NAME.equals(build.getClass().getCanonicalName())&&!useWorkspaceInPromotion) {
-            filesRoot = getPromotionPath(build);
-        }
-        else{
-            filesRoot = getWorkspace(build);
-        }
+        FilePath filesRoot=this.getFilesRoot(build);
 
         List<PublicationResult> results = filesRoot.act(callable);
         if (results.size() > 0) {
@@ -77,6 +72,17 @@ public class NugetPublisher extends Recorder {
         listener.getLogger().format("Ended %s publication%n", name);
         checkErrors(results);
         return true;
+    }
+     
+    private FilePath getFilesRoot(AbstractBuild<?, ?> build){
+        FilePath filesRoot;
+        if (PROMOTION_CLASS_NAME.equals(build.getClass().getCanonicalName())&&!useWorkspaceInPromotion) {
+            filesRoot = getPromotionPath(build);
+        }
+        else{
+            filesRoot = getWorkspace(build);
+        }
+        return filesRoot;
     }
 
     private void checkErrors(List<PublicationResult> results) throws AbortException {
@@ -134,7 +140,7 @@ public class NugetPublisher extends Recorder {
 
         @Override
         public boolean isApplicable(Class<? extends AbstractProject> type) {
-            return PROMOTION_JOB_TYPE.equals(type.getCanonicalName());
+            return !PROMOTION_JOB_TYPE.equals(type.getCanonicalName());
         }
 
         @Override
