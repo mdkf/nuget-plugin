@@ -42,51 +42,21 @@ import org.kohsuke.stapler.QueryParameter;
  * @author MFowler
  */
 public class NugetPromotionPublisher extends NugetPublisher{
+   
+//    private boolean useWorkspaceInPromotion; 
     
-    private String name;
-    private String packagesPattern;
-    private String nugetPublicationName;
-    private String packagesExclusionPattern;
-    private boolean useWorkspaceInPromotion;
-
     @DataBoundConstructor
     public NugetPromotionPublisher(String name, String packagesPattern, String nugetPublicationName, String packagesExclusionPattern, boolean useWorkspaceInPromotion) {
-        this.name = name;
-        this.packagesPattern = packagesPattern;
-        this.nugetPublicationName = nugetPublicationName;
-        this.packagesExclusionPattern = packagesExclusionPattern;
-        this.useWorkspaceInPromotion=useWorkspaceInPromotion;
+        super(name, packagesPattern, nugetPublicationName, packagesExclusionPattern, useWorkspaceInPromotion);
+//        this.useWorkspaceInPromotion=useWorkspaceInPromotion;
     }
     
-    
-    @Override
-    public String getName() {
-        return name;
-    }
-
-    @Override
-    public String getPackagesPattern() {
-        return packagesPattern;
-    }
-
-    @Override
-    public String getPackagesExclusionPattern() {
-        return packagesExclusionPattern;
-    }
-
-    @Override
-    public String getNugetPublicationName() {
-        return nugetPublicationName;
-    }
-    
+/*  
     @Override
     public boolean getUseWorkspaceInPromotion(){
         return useWorkspaceInPromotion;
     }
-    
-
-    
-    
+ */   
 
 @Extension
     public static final class NugetPromotionPublisherDescriptor extends BuildStepDescriptor<Publisher> {

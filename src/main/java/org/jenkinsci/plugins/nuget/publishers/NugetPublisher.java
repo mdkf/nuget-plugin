@@ -31,11 +31,11 @@ public class NugetPublisher extends Recorder {
     private static final Logger logger = Logger.getLogger(NugetPublisher.class.getName());
     private static final String PROMOTION_CLASS_NAME = "hudson.plugins.promoted_builds.Promotion";
     
-    private String name;
-    private String packagesPattern;
-    private String nugetPublicationName;
-    private String packagesExclusionPattern;
-    private boolean useWorkspaceInPromotion;
+    protected String name;
+    protected String packagesPattern;
+    protected String nugetPublicationName;
+    protected String packagesExclusionPattern;
+    protected boolean useWorkspaceInPromotion;
 
     @DataBoundConstructor
     public NugetPublisher(String name, String packagesPattern, String nugetPublicationName, String packagesExclusionPattern, boolean useWorkspaceInPromotion) {
@@ -46,7 +46,7 @@ public class NugetPublisher extends Recorder {
         this.useWorkspaceInPromotion=useWorkspaceInPromotion;
     }
     
-    public NugetPublisher(){}
+    //public NugetPublisher(){}
 
     @Override
     public BuildStepMonitor getRequiredMonitorService() {
@@ -54,7 +54,7 @@ public class NugetPublisher extends Recorder {
     }
 
     @Override
-     public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+    public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
         listener.getLogger().format("Starting %s publication%n", name);
         NugetGlobalConfiguration configuration = GlobalConfiguration.all().get(NugetGlobalConfiguration.class);
         NugetPublication publication = NugetPublication.get(nugetPublicationName);
