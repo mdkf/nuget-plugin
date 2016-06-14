@@ -32,6 +32,7 @@ import hudson.tasks.Publisher;
 import hudson.util.FormValidation;
 import java.lang.reflect.Method;
 import java.util.List;
+import java.util.logging.Level;
 import org.jenkinsci.plugins.nuget.Messages;
 import org.jenkinsci.plugins.nuget.NugetPublication;
 import org.jenkinsci.plugins.nuget.Utils.Validations;
@@ -62,13 +63,13 @@ public class NugetPromotionPublisher extends NugetPublisher {
 
     @Override
     protected FilePath getFilesRoot(AbstractBuild<?, ?> build) {
-        logger.info("sub");
         FilePath filesRoot;
         if (PROMOTION_CLASS_NAME.equals(build.getClass().getCanonicalName()) && !useWorkspaceInPromotion) {
             filesRoot = getPromotionPath(build);
         } else {
             filesRoot = getWorkspace(build);
         }
+        logger.log(Level.INFO, "Publishing from {0}", filesRoot);
         return filesRoot;
     }
 

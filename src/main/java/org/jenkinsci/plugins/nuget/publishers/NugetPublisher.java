@@ -69,7 +69,6 @@ public class NugetPublisher extends Recorder {
     }
 
     protected FilePath getFilesRoot(AbstractBuild<?, ?> build) {
-        logger.info("super");
         return getWorkspace(build);
     }
 
