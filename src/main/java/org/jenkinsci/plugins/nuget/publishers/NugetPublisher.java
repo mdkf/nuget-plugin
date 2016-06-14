@@ -19,7 +19,6 @@ import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 
 import java.io.IOException;
-import java.lang.reflect.Method;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -28,25 +27,20 @@ import java.util.logging.Logger;
  */
 public class NugetPublisher extends Recorder {
 
-    private static final Logger logger = Logger.getLogger(NugetPublisher.class.getName());
-    private static final String PROMOTION_CLASS_NAME = "hudson.plugins.promoted_builds.Promotion";
-    
+    protected static final Logger logger = Logger.getLogger(NugetPublisher.class.getName());
+
     protected String name;
     protected String packagesPattern;
     protected String nugetPublicationName;
     protected String packagesExclusionPattern;
-    protected boolean useWorkspaceInPromotion;
 
     @DataBoundConstructor
-    public NugetPublisher(String name, String packagesPattern, String nugetPublicationName, String packagesExclusionPattern, boolean useWorkspaceInPromotion) {
+    public NugetPublisher(String name, String packagesPattern, String nugetPublicationName, String packagesExclusionPattern) {
         this.name = name;
         this.packagesPattern = packagesPattern;
         this.nugetPublicationName = nugetPublicationName;
         this.packagesExclusionPattern = packagesExclusionPattern;
-        this.useWorkspaceInPromotion=useWorkspaceInPromotion;
     }
-    
-    //public NugetPublisher(){}
 
     @Override
     public BuildStepMonitor getRequiredMonitorService() {
@@ -62,8 +56,8 @@ public class NugetPublisher extends Recorder {
         String pattern = Util.replaceMacro(packagesPattern, build.getEnvironment(listener));
         String exclusionPattern = Util.replaceMacro(packagesExclusionPattern, build.getEnvironment(listener));
         NugetPublisherCallable callable = new NugetPublisherCallable(pattern, exclusionPattern, listener, configuration, publication);
-        
-        FilePath filesRoot=this.getFilesRoot(build);
+
+        FilePath filesRoot = this.getFilesRoot(build);
 
         List<PublicationResult> results = filesRoot.act(callable);
         if (results.size() > 0) {
@@ -73,20 +67,14 @@ public class NugetPublisher extends Recorder {
         checkErrors(results);
         return true;
     }
-     
-    private FilePath getFilesRoot(AbstractBuild<?, ?> build){
-        FilePath filesRoot;
-        if (PROMOTION_CLASS_NAME.equals(build.getClass().getCanonicalName())&&!useWorkspaceInPromotion) {
-            filesRoot = getPromotionPath(build);
-        }
-        else{
-            filesRoot = getWorkspace(build);
-        }
-        return filesRoot;
+
+    protected FilePath getFilesRoot(AbstractBuild<?, ?> build) {
+        logger.info("super");
+        return getWorkspace(build);
     }
 
     private void checkErrors(List<PublicationResult> results) throws AbortException {
-        for(PublicationResult result : results) {
+        for (PublicationResult result : results) {
             if (!result.isSuccess()) {
                 throw new AbortException("There were errors while publishing packages to NuGet.");
             }
@@ -94,19 +82,8 @@ public class NugetPublisher extends Recorder {
     }
 
     @SuppressFBWarnings(value = "NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE", justification = "We shoud have.")
-    private FilePath getWorkspace(AbstractBuild<?, ?> build) {
+    protected FilePath getWorkspace(AbstractBuild<?, ?> build) {
         return build.getWorkspace();
-    }
-    
-    private FilePath getPromotionPath(AbstractBuild<?, ?> build){
-        AbstractBuild<?, ?> promoted;
-        try {
-            final Method getTarget = build.getClass().getMethod("getTarget", (Class<?>[]) null);
-            promoted = (AbstractBuild) getTarget.invoke(build, (Object[]) null);
-        } catch (Exception e) {
-            throw new RuntimeException(Messages.exception_failedToGetPromotedBuild(), e);
-        }
-        return new FilePath(promoted.getArtifactsDir());
     }
 
     public String getName() {
@@ -124,15 +101,12 @@ public class NugetPublisher extends Recorder {
     public String getNugetPublicationName() {
         return nugetPublicationName;
     }
-    
-    public boolean getUseWorkspaceInPromotion(){
-        return useWorkspaceInPromotion;
-    }
 
     @Extension
     public static final class NugetPublisherDescriptor extends BuildStepDescriptor<Publisher> {
+
         private static final String PROMOTION_JOB_TYPE = "hudson.plugins.promoted_builds.PromotionProcess";
-        
+
         public NugetPublisherDescriptor() {
             super(NugetPublisher.class);
             load();

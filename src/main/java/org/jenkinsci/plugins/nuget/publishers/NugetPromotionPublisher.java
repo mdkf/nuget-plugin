@@ -24,16 +24,19 @@
 package org.jenkinsci.plugins.nuget.publishers;
 
 import hudson.Extension;
+import hudson.FilePath;
+import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Publisher;
 import hudson.util.FormValidation;
+import java.lang.reflect.Method;
 import java.util.List;
-import jenkins.model.Jenkins;
 import org.jenkinsci.plugins.nuget.Messages;
 import org.jenkinsci.plugins.nuget.NugetPublication;
 import org.jenkinsci.plugins.nuget.Utils.Validations;
 import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.DataBoundSetter;
 
 import org.kohsuke.stapler.QueryParameter;
 
@@ -41,27 +44,50 @@ import org.kohsuke.stapler.QueryParameter;
  *
  * @author MFowler
  */
-public class NugetPromotionPublisher extends NugetPublisher{
-   
-//    private boolean useWorkspaceInPromotion; 
-    
+public class NugetPromotionPublisher extends NugetPublisher {
+
+    private final boolean useWorkspaceInPromotion;
+    private static final String PROMOTION_CLASS_NAME = "hudson.plugins.promoted_builds.Promotion";
+
     @DataBoundConstructor
     public NugetPromotionPublisher(String name, String packagesPattern, String nugetPublicationName, String packagesExclusionPattern, boolean useWorkspaceInPromotion) {
-        super(name, packagesPattern, nugetPublicationName, packagesExclusionPattern, useWorkspaceInPromotion);
-//        this.useWorkspaceInPromotion=useWorkspaceInPromotion;
+        super(name, packagesPattern, nugetPublicationName, packagesExclusionPattern);
+        this.useWorkspaceInPromotion = useWorkspaceInPromotion;
     }
-    
-/*  
-    @Override
-    public boolean getUseWorkspaceInPromotion(){
+
+    @DataBoundSetter
+    public boolean getUseWorkspaceInPromotion() {
         return useWorkspaceInPromotion;
     }
- */   
 
-@Extension
+    @Override
+    protected FilePath getFilesRoot(AbstractBuild<?, ?> build) {
+        logger.info("sub");
+        FilePath filesRoot;
+        if (PROMOTION_CLASS_NAME.equals(build.getClass().getCanonicalName()) && !useWorkspaceInPromotion) {
+            filesRoot = getPromotionPath(build);
+        } else {
+            filesRoot = getWorkspace(build);
+        }
+        return filesRoot;
+    }
+
+    private FilePath getPromotionPath(AbstractBuild<?, ?> build) {
+        AbstractBuild<?, ?> promoted;
+        try {
+            final Method getTarget = build.getClass().getMethod("getTarget", (Class<?>[]) null);
+            promoted = (AbstractBuild) getTarget.invoke(build, (Object[]) null);
+        } catch (Exception e) {
+            throw new RuntimeException(Messages.exception_failedToGetPromotedBuild(), e);
+        }
+        return new FilePath(promoted.getArtifactsDir());
+    }
+
+    @Extension
     public static final class NugetPromotionPublisherDescriptor extends BuildStepDescriptor<Publisher> {
+
         private static final String PROMOTION_JOB_TYPE = "hudson.plugins.promoted_builds.PromotionProcess";
-        
+
         public NugetPromotionPublisherDescriptor() {
             super(NugetPromotionPublisher.class);
             load();
@@ -76,12 +102,8 @@ public class NugetPromotionPublisher extends NugetPublisher{
         public String getDisplayName() {
             return Messages.NugetPromotionPublisher_DisplayName();
         }
-        /*
-        public NugetPromotionPublisherDescriptor getPublisherDescriptor() {
-            return Jenkins.getInstance().getDescriptorByType(NugetPromotionPublisherDescriptor.class);
-        } */
-        
-        public Class<? super NugetPromotionPublisher> getPublisherSuperclass(){
+
+        public Class<? super NugetPromotionPublisher> getPublisherSuperclass() {
             return NugetPromotionPublisher.class.getSuperclass();
         }
 

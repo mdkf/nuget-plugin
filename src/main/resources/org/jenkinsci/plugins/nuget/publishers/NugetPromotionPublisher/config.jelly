@@ -26,12 +26,6 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <!-- TODO add taglibs such as: xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" -->
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:i="jelly:fmt" xmlns:f="/lib/form">
-   <j:set var="inPromotion" value="true"/>
-     <!-- <j:set var="instance" value="${instance.delegate}"/>
-      <j:set var="descriptor" value="${descriptor.publisherDescriptor}"/>
-        <f:entry title="${descriptor.publisherSuperclass}" field="woot">
-        <f:checkbox />
-    </f:entry> -->
-    
+    <j:set var="inPromotion" value="true"/>
     <st:include page="config.jelly" class="${descriptor.publisherSuperclass}"/>
 </j:jelly>
