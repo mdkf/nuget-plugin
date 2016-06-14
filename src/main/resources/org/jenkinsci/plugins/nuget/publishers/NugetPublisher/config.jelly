@@ -1,6 +1,9 @@
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form">
     <j:set var="nugetPublications" value="${descriptor.publications}"/>
+    <f:entry title="${%Name}" field="name">
+        <f:textbox value="${instance.name}"/>
+    </f:entry>
     <j:if test="${empty(nugetPublications)}">
         <!-- no SonarQube installation is configured, so warn the user now -->
         <f:entry title="${%NugetPublication}">
