@@ -32,6 +32,7 @@ public class NugetPublisher extends Recorder {
 
     protected String name;
     protected String packagesPattern;
+    protected String publishPath;
     protected String nugetPublicationName;
     protected String packagesExclusionPattern;
 
@@ -50,22 +51,27 @@ public class NugetPublisher extends Recorder {
     }
 
     @Override
-    public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
-        listener.getLogger().format("Starting %s publication%n", name);
-        NugetGlobalConfiguration configuration = GlobalConfiguration.all().get(NugetGlobalConfiguration.class);
-        NugetPublication publication = NugetPublication.get(nugetPublicationName);
-
+     public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+       
+        //expand parameters 
+        String expandedName = Util.replaceMacro(name, build.getEnvironment(listener));
         String pattern = Util.replaceMacro(packagesPattern, build.getEnvironment(listener));
         String exclusionPattern = Util.replaceMacro(packagesExclusionPattern, build.getEnvironment(listener));
-        NugetPublisherCallable callable = new NugetPublisherCallable(pattern, exclusionPattern, listener, configuration, publication);
+        String expandedPublishPath = Util.replaceMacro(publishPath, build.getEnvironment(listener));
+        
+        listener.getLogger().format("Starting %s publication%n", expandedName);
+        FilePath workspaceRoot = getWorkspace(build);
+        NugetGlobalConfiguration configuration = GlobalConfiguration.all().get(NugetGlobalConfiguration.class);
+        NugetPublication publication = NugetPublication.get(nugetPublicationName);
+        NugetPublisherCallable callable = new NugetPublisherCallable(pattern, exclusionPattern, listener, configuration, expandedPublishPath, publication);
 
         FilePath filesRoot = this.getFilesRoot(build);
 
         List<PublicationResult> results = filesRoot.act(callable);
         if (results.size() > 0) {
-            build.addAction(new NugetPublisherRunAction(name, results));
+            build.addAction(new NugetPublisherRunAction(expandedName, results));
         }
-        listener.getLogger().format("Ended %s publication%n", name);
+        listener.getLogger().format("Ended %s publication%n", expandedName);
         checkErrors(results);
         return true;
     }
@@ -75,7 +81,7 @@ public class NugetPublisher extends Recorder {
     }
 
     private void checkErrors(List<PublicationResult> results) throws AbortException {
-        for (PublicationResult result : results) {
+        for(PublicationResult result : results) {
             if (!result.isSuccess()) {
                 throw new AbortException("There were errors while publishing packages to NuGet.");
             }
