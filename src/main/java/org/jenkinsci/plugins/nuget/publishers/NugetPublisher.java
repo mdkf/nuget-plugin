@@ -60,7 +60,6 @@ public class NugetPublisher extends Recorder {
         String expandedPublishPath = Util.replaceMacro(publishPath, build.getEnvironment(listener));
         
         listener.getLogger().format("Starting %s publication%n", expandedName);
-        FilePath workspaceRoot = getWorkspace(build);
         NugetGlobalConfiguration configuration = GlobalConfiguration.all().get(NugetGlobalConfiguration.class);
         NugetPublication publication = NugetPublication.get(nugetPublicationName);
         NugetPublisherCallable callable = new NugetPublisherCallable(pattern, exclusionPattern, listener, configuration, expandedPublishPath, publication);
