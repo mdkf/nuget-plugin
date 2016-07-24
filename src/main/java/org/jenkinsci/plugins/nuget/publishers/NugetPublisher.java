@@ -17,6 +17,7 @@ import org.jenkinsci.plugins.nuget.NugetPublication;
 import org.jenkinsci.plugins.nuget.Utils.Validations;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
+import org.apache.commons.lang.StringUtils;
 
 import java.io.IOException;
 import java.util.List;
@@ -35,9 +36,10 @@ public class NugetPublisher extends Recorder {
     protected String packagesExclusionPattern;
 
     @DataBoundConstructor
-    public NugetPublisher(String name, String packagesPattern, String nugetPublicationName, String packagesExclusionPattern) {
+    public NugetPublisher(String name, String packagesPattern, String publishPath, String nugetPublicationName, String packagesExclusionPattern) {
         this.name = name;
         this.packagesPattern = packagesPattern;
+        this.publishPath = StringUtils.trim(publishPath);
         this.nugetPublicationName = nugetPublicationName;
         this.packagesExclusionPattern = packagesExclusionPattern;
     }
@@ -93,6 +95,10 @@ public class NugetPublisher extends Recorder {
         return packagesPattern;
     }
 
+    public String getPublishPath() {
+        return publishPath;
+    }
+
     public String getPackagesExclusionPattern() {
         return packagesExclusionPattern;
     }
@@ -135,6 +141,10 @@ public class NugetPublisher extends Recorder {
 
         public FormValidation doCheckNugetPublicationName(@QueryParameter String value) {
             return Validations.mandatory(value);
+        }
+        
+        public FormValidation doCheckPublishPath(@QueryParameter String value) {
+            return Validations.urlPath(value);
         }
     }
 }
