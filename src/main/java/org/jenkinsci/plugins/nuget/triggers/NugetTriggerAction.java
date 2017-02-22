@@ -28,14 +28,17 @@ public class NugetTriggerAction implements Action {
         return job;
     }
     
+    @Override
     public String getIconFileName() {
         return "clipboard.gif";
     }
 
+    @Override
     public String getDisplayName() {
         return "Nuget Trigger Log";
     }
 
+    @Override
     public String getUrlName() {
         return "nugettriggerPollLog";
     }
