@@ -5,7 +5,6 @@ import hudson.remoting.VirtualChannel;
 import jenkins.MasterToSlaveFileCallable;
 import org.jenkinsci.lib.xtrigger.XTriggerLog;
 import org.jenkinsci.plugins.nuget.NugetGlobalConfiguration;
-import org.jenkinsci.plugins.nuget.triggers.NugetTrigger;
 
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.File;
@@ -27,6 +26,7 @@ class NugetPackagesCheckerCallable extends MasterToSlaveFileCallable<Boolean> {
         this.log = log;
     }
 
+    @Override
     public Boolean invoke(File file, VirtualChannel vc) throws IOException, InterruptedException {
         try {
             FilePath filePath = new FilePath(file);

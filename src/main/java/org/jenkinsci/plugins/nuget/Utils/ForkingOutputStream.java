@@ -1,7 +1,6 @@
 package org.jenkinsci.plugins.nuget.Utils;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.tools.ant.taskdefs.Input;
 
 import java.io.*;
 import java.util.List;
@@ -25,9 +24,10 @@ class ForkingOutputStream extends OutputStream {
     }
 
     public List<String> getLines() throws IOException {
-        ByteArrayInputStream is = new ByteArrayInputStream(forkedStream.toByteArray());
-        List<String> result = IOUtils.readLines(is);
-        is.close();
+        List<String> result;
+        try (ByteArrayInputStream is = new ByteArrayInputStream(forkedStream.toByteArray())) {
+            result = IOUtils.readLines(is);
+        }
         forkedStream.close();
         return result;
     }
