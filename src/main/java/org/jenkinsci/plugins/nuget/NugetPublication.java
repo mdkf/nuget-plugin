@@ -39,11 +39,8 @@ public class NugetPublication implements Serializable {
 
     public static final List<NugetPublication> all() {
         Jenkins jenkins = Jenkins.getInstance();
-        if (jenkins != null) {
-            NugetGlobalConfiguration sonarDescriptor = jenkins.getDescriptorByType(NugetGlobalConfiguration.class);
-            return sonarDescriptor.getPublications();
-        }
-        return Collections.EMPTY_LIST;
+        NugetGlobalConfiguration sonarDescriptor = jenkins.getDescriptorByType(NugetGlobalConfiguration.class);
+        return sonarDescriptor.getPublications();
     }
 
     public static final NugetPublication get(String name) {

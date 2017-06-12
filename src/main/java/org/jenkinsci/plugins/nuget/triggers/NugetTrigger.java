@@ -111,9 +111,6 @@ public class NugetTrigger extends AbstractTrigger {
         @Override
         public XmlFile getConfigFile() {
             Jenkins jenkins = Jenkins.getInstance();
-            if (jenkins == null) {
-                return null;
-            }
             return new XmlFile(Items.XSTREAM2, new File(jenkins.getRootDir(), "com.jenkinsci.nuget.NugetTrigger.xml"));
         }
     }
