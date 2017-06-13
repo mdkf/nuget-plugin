@@ -21,7 +21,10 @@ import org.apache.commons.lang.StringUtils;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.jenkinsci.plugins.tokenmacro.MacroEvaluationException;
+import org.jenkinsci.plugins.tokenmacro.TokenMacro;
 
 /**
  * @author Arnaud TAMAILLON
@@ -54,24 +57,30 @@ public class NugetPublisher extends Recorder {
      public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
        
         //expand parameters 
-        String expandedName = Util.replaceMacro(name, build.getEnvironment(listener));
-        String pattern = Util.replaceMacro(packagesPattern, build.getEnvironment(listener));
-        String exclusionPattern = Util.replaceMacro(packagesExclusionPattern, build.getEnvironment(listener));
-        String expandedPublishPath = Util.replaceMacro(publishPath, build.getEnvironment(listener));
+        try {
+            String expandedName = TokenMacro.expandAll(build, listener, this.name);
+            String pattern = TokenMacro.expandAll(build, listener, this.packagesPattern);
+            String exclusionPattern = TokenMacro.expandAll(build, listener, this.packagesExclusionPattern);
+            String expandedPublishPath = TokenMacro.expandAll(build, listener, this.publishPath);    
         
-        listener.getLogger().format("Starting %s publication%n", expandedName);
-        NugetGlobalConfiguration configuration = GlobalConfiguration.all().get(NugetGlobalConfiguration.class);
-        NugetPublication publication = NugetPublication.get(nugetPublicationName);
-        NugetPublisherCallable callable = new NugetPublisherCallable(pattern, exclusionPattern, listener, configuration, expandedPublishPath, publication);
+            listener.getLogger().format("Starting %s publication%n", expandedName);
+            NugetGlobalConfiguration configuration = GlobalConfiguration.all().get(NugetGlobalConfiguration.class);
+            NugetPublication publication = NugetPublication.get(nugetPublicationName);
+            NugetPublisherCallable callable = new NugetPublisherCallable(pattern, exclusionPattern, listener, configuration, expandedPublishPath, publication);
 
-        FilePath filesRoot = this.getFilesRoot(build);
+            FilePath filesRoot = this.getFilesRoot(build);
 
-        List<PublicationResult> results = filesRoot.act(callable);
-        if (results.size() > 0) {
-            build.addAction(new NugetPublisherRunAction(expandedName, results));
+            List<PublicationResult> results = filesRoot.act(callable);
+            if (results.size() > 0) {
+                build.addAction(new NugetPublisherRunAction(expandedName, results));
+            }
+            listener.getLogger().format("Ended %s publication%n", expandedName);
+            checkErrors(results);
+        
+        } catch (MacroEvaluationException ex) {
+            Logger.getLogger(NugetPublisher.class.getName()).log(Level.SEVERE, null, ex);
+            return false;
         }
-        listener.getLogger().format("Ended %s publication%n", expandedName);
-        checkErrors(results);
         return true;
     }
 
