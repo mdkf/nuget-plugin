@@ -7,7 +7,7 @@ import hudson.util.FormValidation;
 import jenkins.model.GlobalConfiguration;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
-import org.jenkinsci.plugins.nuget.Utils.Validations;
+import org.jenkinsci.plugins.nuget.utils.Validations;
 import org.jenkinsci.plugins.nuget.triggers.NugetTrigger;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
@@ -29,7 +29,6 @@ public class NugetGlobalConfiguration extends GlobalConfiguration implements Ser
     public NugetGlobalConfiguration() {
         super();
         load();
-        save();
     }
 
     public String getNugetExe() {

@@ -1,9 +1,10 @@
-package org.jenkinsci.plugins.nuget.Utils;
+package org.jenkinsci.plugins.nuget.utils;
 
 import com.google.common.collect.Maps;
 import hudson.FilePath;
 import org.jenkinsci.lib.xtrigger.XTriggerLog;
 import org.jenkinsci.plugins.nuget.NugetGlobalConfiguration;
+import org.jenkinsci.plugins.nuget.triggers.logs.TriggerLog;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -25,7 +26,7 @@ import java.util.Map;
 class NugetPackageCheckerVisitor extends SimpleFileVisitor<Path> {
 
     private final Map<String, String> latestPackageVersions = Maps.newHashMap();
-    private final XTriggerLog log;
+    private final TriggerLog log;
     private final boolean preReleaseChecked;
     private final FilePath workspaceRoot;
     private final DocumentBuilder builder;
@@ -36,7 +37,7 @@ class NugetPackageCheckerVisitor extends SimpleFileVisitor<Path> {
         return updated;
     }
 
-    NugetPackageCheckerVisitor(XTriggerLog log, NugetGlobalConfiguration configuration, boolean preReleaseChecked, FilePath workspaceRoot) throws ParserConfigurationException {
+    NugetPackageCheckerVisitor(TriggerLog log, NugetGlobalConfiguration configuration, boolean preReleaseChecked, FilePath workspaceRoot) throws ParserConfigurationException {
         this.log = log;
         this.configuration = configuration;
         this.preReleaseChecked = preReleaseChecked;
@@ -48,16 +49,18 @@ class NugetPackageCheckerVisitor extends SimpleFileVisitor<Path> {
     public FileVisitResult visitFile(Path file, BasicFileAttributes attributes) throws IOException {
         Path fileName = file.getFileName();
         if (fileName == null) {
+            log.skippingFileWithNoFileName();
             return FileVisitResult.CONTINUE;
         }
         if (!fileName.toString().equalsIgnoreCase("packages.config")) {
+            log.skippedFileNotPackagesConfig(file);
             return FileVisitResult.CONTINUE;
         }
+        log.checkingPackageFile(file);
         return checkPackageFile(file);
     }
 
     private FileVisitResult checkPackageFile(Path file) throws IOException {
-        log.info(String.format("Checking packages file: %s", file.toAbsolutePath().toString()));
         try {
             Document doc = builder.parse(file.toFile());
 
@@ -68,27 +71,29 @@ class NugetPackageCheckerVisitor extends SimpleFileVisitor<Path> {
                 String id = p.getAttribute("id");
                 String version = p.getAttribute("version");
                 String latest = getPackageVersion(workspaceRoot, id);
+                log.packageVersionRetrieved(id, latest);
 
                 if (latest == null || !version.equals(latest)) {
-                    log.info(String.format("Package %s v%s should update to v%s.", id, version, latest));
+                    log.packageHasBeenUpdated(id, version, latest);
                     updated = true;
                     return FileVisitResult.TERMINATE;
                 }
             }
         } catch (SAXException ex) {
-            log.error(ex.toString());
+            log.errorWhileParsingPackageConfigFile(ex);
         }
         return FileVisitResult.CONTINUE;
     }
 
     @Override
     public FileVisitResult visitFileFailed(Path file, IOException exc) throws IOException {
-        log.error(exc.toString());
+        log.errorVisitingFile(exc);
         return FileVisitResult.CONTINUE;
     }
 
     private String getPackageVersion(FilePath workspaceRoot, String packageName) throws IOException {
         if (latestPackageVersions.containsKey(packageName)) {
+            log.reusingCachedPackageVersion(packageName);
             return latestPackageVersions.get(packageName);
         }
         NugetGetLatestPackageVersionCommand command = new NugetGetLatestPackageVersionCommand(log, configuration, workspaceRoot, packageName, preReleaseChecked);

@@ -35,7 +35,7 @@ import java.util.List;
 import java.util.logging.Level;
 import org.jenkinsci.plugins.nuget.Messages;
 import org.jenkinsci.plugins.nuget.NugetPublication;
-import org.jenkinsci.plugins.nuget.Utils.Validations;
+import org.jenkinsci.plugins.nuget.utils.Validations;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
 
@@ -51,8 +51,8 @@ public class NugetPromotionPublisher extends NugetPublisher {
     private static final String PROMOTION_CLASS_NAME = "hudson.plugins.promoted_builds.Promotion";
 
     @DataBoundConstructor
-    public NugetPromotionPublisher(String name, String packagesPattern, String publishPath, String nugetPublicationName, String packagesExclusionPattern, boolean useWorkspaceInPromotion) {
-        super(name, packagesPattern, publishPath, nugetPublicationName, packagesExclusionPattern);
+    public NugetPromotionPublisher(String name, String packagesPattern, String publishPath, String nugetPublicationName, String packagesExclusionPattern, boolean useWorkspaceInPromotion, boolean doNotFailIfNoPackagesArePublished) {
+        super(name, packagesPattern, publishPath, nugetPublicationName, packagesExclusionPattern, doNotFailIfNoPackagesArePublished);
         this.useWorkspaceInPromotion = useWorkspaceInPromotion;
     }
 

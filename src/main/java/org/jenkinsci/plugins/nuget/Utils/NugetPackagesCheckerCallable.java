@@ -1,10 +1,12 @@
-package org.jenkinsci.plugins.nuget.Utils;
+package org.jenkinsci.plugins.nuget.utils;
 
 import hudson.FilePath;
 import hudson.remoting.VirtualChannel;
 import jenkins.MasterToSlaveFileCallable;
 import org.jenkinsci.lib.xtrigger.XTriggerLog;
 import org.jenkinsci.plugins.nuget.NugetGlobalConfiguration;
+import org.jenkinsci.plugins.nuget.triggers.NugetTrigger;
+import org.jenkinsci.plugins.nuget.triggers.logs.TriggerLog;
 
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.File;
@@ -17,10 +19,10 @@ import java.nio.file.Paths;
  */
 class NugetPackagesCheckerCallable extends MasterToSlaveFileCallable<Boolean> {
     private final boolean preReleaseChecked;
-    private final XTriggerLog log;
+    private final TriggerLog log;
     private final NugetGlobalConfiguration configuration;
 
-    NugetPackagesCheckerCallable(NugetGlobalConfiguration configuration, boolean preReleaseChecked, XTriggerLog log) {
+    NugetPackagesCheckerCallable(NugetGlobalConfiguration configuration, boolean preReleaseChecked, TriggerLog log) {
         this.configuration = configuration;
         this.preReleaseChecked = preReleaseChecked;
         this.log = log;
