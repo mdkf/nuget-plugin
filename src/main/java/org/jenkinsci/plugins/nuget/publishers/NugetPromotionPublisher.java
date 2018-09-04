@@ -30,6 +30,7 @@ import hudson.model.AbstractProject;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Publisher;
 import hudson.util.FormValidation;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.List;
 import java.util.logging.Level;
@@ -78,7 +79,7 @@ public class NugetPromotionPublisher extends NugetPublisher {
         try {
             final Method getTarget = build.getClass().getMethod("getTarget", (Class<?>[]) null);
             promoted = (AbstractBuild) getTarget.invoke(build, (Object[]) null);
-        } catch (Exception e) {
+        } catch (IllegalAccessException | IllegalArgumentException | NoSuchMethodException | SecurityException | InvocationTargetException e) {
             throw new RuntimeException(Messages.exception_failedToGetPromotedBuild(), e);
         }
         return new FilePath(promoted.getArtifactsDir());

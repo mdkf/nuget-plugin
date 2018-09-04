@@ -4,7 +4,6 @@ import hudson.FilePath;
 
 import java.io.IOException;
 
-import org.jenkinsci.lib.xtrigger.XTriggerLog;
 import org.jenkinsci.plugins.nuget.NugetGlobalConfiguration;
 import org.jenkinsci.plugins.nuget.triggers.logs.TriggerLog;
 
@@ -25,7 +24,7 @@ public class NugetUpdater {
     public boolean performUpdate() {
         try {
             return checkVersions();
-        } catch (Throwable ex) {
+        } catch (IOException | InterruptedException ex) {
             log.error(ex.toString());
             return false;
         }

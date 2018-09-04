@@ -3,9 +3,7 @@ package org.jenkinsci.plugins.nuget.utils;
 import hudson.FilePath;
 import hudson.remoting.VirtualChannel;
 import jenkins.MasterToSlaveFileCallable;
-import org.jenkinsci.lib.xtrigger.XTriggerLog;
 import org.jenkinsci.plugins.nuget.NugetGlobalConfiguration;
-import org.jenkinsci.plugins.nuget.triggers.NugetTrigger;
 import org.jenkinsci.plugins.nuget.triggers.logs.TriggerLog;
 
 import javax.xml.parsers.ParserConfigurationException;

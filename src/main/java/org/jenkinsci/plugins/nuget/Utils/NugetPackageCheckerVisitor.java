@@ -2,7 +2,6 @@ package org.jenkinsci.plugins.nuget.utils;
 
 import com.google.common.collect.Maps;
 import hudson.FilePath;
-import org.jenkinsci.lib.xtrigger.XTriggerLog;
 import org.jenkinsci.plugins.nuget.NugetGlobalConfiguration;
 import org.jenkinsci.plugins.nuget.triggers.logs.TriggerLog;
 import org.w3c.dom.Document;

@@ -1,7 +1,6 @@
 package org.jenkinsci.plugins.nuget.triggers.logs;
 
 import hudson.model.TaskListener;
-import org.jenkinsci.lib.xtrigger.XTriggerLog;
 import org.xml.sax.SAXException;
 
 import java.io.IOException;

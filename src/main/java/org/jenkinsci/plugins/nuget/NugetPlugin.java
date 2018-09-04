@@ -12,7 +12,7 @@ import org.jenkinsci.plugins.nuget.triggers.NugetTriggerAction;
 /**
  * @author Arnaud TAMAILLON
  */
-public class NugetPlugin  extends Plugin {
+public class NugetPlugin  extends Plugin {  //Deprecated see: https://javadoc.jenkins.io/hudson/Plugin.html#Plugin--
     @Override
     public void start() throws Exception {
         super.start();
